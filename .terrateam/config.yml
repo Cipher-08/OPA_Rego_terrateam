@@ -5,12 +5,11 @@ hooks:
         provider: aws
         role_arn: "arn:aws:iam::017777978390:role/terrateam"
 workflows:
-  - tag_query: 'dir:policy-check'
+  - tag_query: "dir:policy-check"
     plan:
       - type: init
       - type: plan
-        name: CONFTEST_POLICY
-        cmd: ['echo', '$TERRATEAM_ROOT/aws/policies/iam/']
       - type: run
-        cmd: ['conftest-wrapper']
+        cmd: ['opa', 'eval', '--input=tfplan.json', '--format', 'pretty', '--data=main.rego', 'data.terraform.s3.deny']
         capture_output: true
+
