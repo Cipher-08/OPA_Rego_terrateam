@@ -20,9 +20,9 @@ num_creates[resource_type] = num {
 }
 
 deny[msg] {
-    some i
-    num_resources := num_creates["aws_s3_bucket"]
-    num_resources > 0
-    not input.resource_changes[i].change.after.server_side_encryption_configuration
+    some resource
+    resource = input.resource_changes[_]
+    resource.type == "aws_s3_bucket"
+    not resource.change.after.server_side_encryption_configuration
     msg := "S3 Bucket encryption is not enabled."
 }
