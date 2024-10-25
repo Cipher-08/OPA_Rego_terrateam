@@ -1,28 +1,21 @@
 package main
 
-resource_types = {"aws_s3_bucket"}
-
-resources[resource_type] = all {
-    some resource_type
-    resource_types[resource_type]
-    all := [name |
-        name := input.resource_changes[_]
-        name.type == resource_type
-    ]
-}
-
-num_creates[resource_type] = num {
-    some resource_type
-    resource_types[resource_type]
-    all := resources[resource_type]
-    creates := [res | res := all[_]; res.change.actions[_] == "create"]
-    num := count(creates)
-}
-
+# Deny any AWS security group ingress rule that allows unrestricted SSH access
 deny[msg] {
-    some resource
-    resource = input.resource_changes[_]
-    resource.type == "aws_s3_bucket"
-    not resource.change.after.server_side_encryption_configuration
-    msg := "S3 Bucket encryption is not enabled."
+  resource := input.resources[_]
+  resource.type == "aws_security_group"
+
+  # Check each ingress rule for unrestricted access on port 22
+  some ingress
+  ingress = resource.values.ingress[_]
+  ingress.from_port == 22
+  ingress.to_port == 22
+  ingress.protocol == "tcp"
+
+  # Iterate over cidr_blocks to detect unrestricted access (0.0.0.0/0)
+  some cidr
+  cidr = ingress.cidr_blocks[_]
+  cidr == "0.0.0.0/0"
+
+  msg = sprintf("Security Group %v has an ingress rule allowing unrestricted SSH access on port 22.", [resource.name])
 }
