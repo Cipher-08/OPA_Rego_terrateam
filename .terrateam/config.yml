@@ -3,7 +3,7 @@ hooks:
     pre:
       - type: oidc
         provider: aws
-        role_arn: "arn:aws:iam::017777978390:role/terrateam"
+        role_arn: "arn:aws:iam::017777978390:role/terrateam"       
 workflows:
   - tag_query: "dir:policy-check"
     plan:
