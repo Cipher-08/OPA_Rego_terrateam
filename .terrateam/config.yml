@@ -3,13 +3,11 @@ hooks:
     pre:
       - type: oidc
         provider: aws
-        role_arn: "arn:aws:iam::017777978390:role/terrateam"       
-workflows:
-  - tag_query: "dir:policy-check"
-    plan:
-      - type: init
-      - type: plan
+        role_arn: "arn:aws:iam::017777978390:role/terrateam"   
+  plan:
+    post:
       - type: run
-        cmd: ['opa', 'eval', '--input=tfplan.json', '--format', 'pretty', '--data=main.rego', 'data.terraform.s3.deny']
+        cmd: ['conftest', 'test', '-o', 'table', '$TERRATEAM_TMPDIR/infracost/infracost.json', '--policy', '$TERRATEAM_ROOT/policy/main.rego']
         capture_output: true
+
 
